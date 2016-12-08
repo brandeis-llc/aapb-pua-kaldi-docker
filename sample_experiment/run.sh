@@ -8,8 +8,8 @@ PATHSETTER=$PREFIX/set-kaldi-path.sh
 . $PATHSETTER
 TMPDIR=/var/extra/audio/work
 
-nj=8
-decode_nj=3
+nj=1
+decode_nj=1
 lmw=14.0
 amw=`echo $lmw | awk '{print 1/$1}'`
 #amw=0.083333
@@ -87,19 +87,15 @@ cat $dataPrep/utt2spk | sort -k 2 | utils/utt2spk_to_spk2utt.pl > $dataPrep/spk2
 steps/make_mfcc.sh --nj $nj --cmd "$train_cmd" --mfcc-config exp/mfcc.conf $dataPrep exp/make_mfcc/test $WORK/mfcc
 steps/compute_cmvn_stats.sh $dataPrep exp/make_mfcc/test $WORK/mfcc
 
-# echo "================= Preparing new LM ==================="
-# sh scripts/create_lm.sh exp/lm/general_v4.txt exp/lang/words.txt
-# sh utils/format_lm.sh exp/lang exp/lm/train.lm.gz exp/lang/phones/lexicon.txt exp/lang_newlm
-# sh utils/mkgraph.sh exp/lang_newlm exp/tri3 exp/tri3/graph
-
-#echo "=================== RNNLM rescore ===================="
-
 echo "=================== Decoding ===================="
-decodeDirF=exp/tri3/decode-$$
-decodeDir=exp/tri3_mmi_b0.1/decode-$$
+decodeDirF=exp/tri3/decode-$wavName
+decodeDir=exp/tri3_mmi_b0.1/decode-$wavName
+decodeDirR=exp/tri3_rescore/decode-$wavName
+mkdir $decodeDirR
 steps/decode_fmllr.sh --nj $decode_nj --cmd "$decode_cmd" --acwt $amw --skip_scoring true exp/tri3/graph $dataPrep $decodeDirF
 steps/decode.sh --transform-dir $decodeDirF --nj $decode_nj --cmd "$decode_cmd" --acwt $amw --skip_scoring true exp/tri3/graph $dataPrep $decodeDir
-lattice-1best --lm-scale=$lmw "ark:gunzip -c $decodeDir/lat.*.gz|" ark:- | lattice-align-words exp/lang_newlm/phones/word_boundary.int exp/tri3_mmi_b0.1/final.mdl ark:- ark:- | nbest-to-ctm ark:- - | utils/int2sym.pl -f 5 exp/lang_newlm/words.txt > $WORK/timings.all.txt
+steps/lmrescore_const_arpa.sh --cmd "$decode_cmd" --skip_scoring true exp/lang_newlm exp/lang_lmrescore $dataPrep $decodeDir $decodeDirR
+lattice-1best --lm-scale=$lmw "ark:gunzip -c $decodeDirR/lat.*.gz|" ark:- | lattice-align-words exp/lang_lmrescore/phones/word_boundary.int exp/tri3_mmi_b0.1/final.mdl ark:- ark:- | nbest-to-ctm ark:- - | utils/int2sym.pl -f 5 exp/lang_newlm/words.txt > $WORK/timings.all.txt
 
 echo "================== Writing output ================"
 echo "#!MLF!#" > $WORK/tmp.mlf

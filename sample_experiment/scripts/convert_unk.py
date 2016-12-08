@@ -11,7 +11,7 @@ def convert_line(wordlist, line):
 		if w in wordlist:
 			new_linewords.append(w)
 		else:
-			new_linewords.append('<unk>')
+			new_linewords.append('<background>')
 	return ' '.join(new_linewords)
 
 with open(wordlist_fpath) as words_file:
