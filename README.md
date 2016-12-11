@@ -6,7 +6,7 @@
 * CMUSeg (use `sample_experiment/install-cmuseg.sh`)
 * IRSTLM (use `[KALDI-PATH]/tools/extras/install_irstlm.sh`)
 * sclite (see `[KALDI-PATH]/tools/sctk-2.4.10`)
-* [exp dir] (https://sourceforge.net/projects/popuparchive-kaldi/files/)
+* Latest version of [exp dir] (https://sourceforge.net/projects/popuparchive-kaldi/files/), should be (re-)named`exp`
 
 ##Notes about Kaldi
 It is recommended that you review the [Kaldi documentation] (http://kaldi-asr.org/doc/) before you begin, especially if you intend to modify the compiled model included on Sourceforge.
