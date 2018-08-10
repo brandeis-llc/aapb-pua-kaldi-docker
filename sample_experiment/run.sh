@@ -108,7 +108,7 @@ cat $dataPrep/wav.scp | while read line; do
   echo "." >> $WORK/tmp.mlf
 done
 
-awk '{print $2}' $dataPrep/wav.scp | sed 's/.wav//g' > $WORK/tmp.scp
+awk '{print $2}' $dataPrep/wav.scp | sed 's/.wav$//g' > $WORK/tmp.scp
 scripts/kaldi2json.pl $WORK/tmp.scp $WORK/tmp.mlf > $OUTPUT
 
 echo "================== Cleaning up =================="
