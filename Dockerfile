@@ -1,6 +1,6 @@
-## Dockerized speech recognition with Kaldi + Pop Up Archive models
-FROM ubuntu:16.10
-MAINTAINER Steve McLaughlin <stephen.mclaughlin@utexas.edu>
+## fork of Dockerized speech recognition with Kaldi + Pop Up Archive models
+FROM ubuntu:18.04
+MAINTAINER Keigh Rim <krim@brandeis.edu>
 
 ENV PYTHONWARNINGS="ignore:a true SSLContext object"
 ENV SHELL /bin/bash
@@ -35,14 +35,9 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 ## Downloading Kaldi and PUA resources
-RUN git clone https://github.com/kaldi-asr/kaldi.git kaldi --origin upstream && \
-cd /kaldi/egs/ && git clone https://github.com/popuparchive/american-archive-kaldi && \
-cd /kaldi/egs/american-archive-kaldi/sample_experiment/ && \
-wget https://sourceforge.net/projects/popuparchive-kaldi/files/exp2.tar.gz && \
-tar -xvzf exp2.tar.gz
-
-## Cleaning up
-RUN rm /kaldi/egs/american-archive-kaldi/sample_experiment/exp2.tar.gz
+RUN git clone https://github.com/kaldi-asr/kaldi.git kaldi --origin upstream
+ADD aapb-popup-kaldi-recipe /kaldi/egs/american-archive-kaldi/
+ADD exp2.tar.gz /kaldi/egs/american-archive-kaldi/sample_experiment/
 
 ## Creating expected symlinks
 RUN ln -s /kaldi/egs/wsj/s5/steps /kaldi/egs/american-archive-kaldi/sample_experiment/exp && \
@@ -52,9 +47,10 @@ ln -s /kaldi/egs/wsj/s5/utils /kaldi/egs/american-archive-kaldi/sample_experimen
 
 ## Installing SoX and FFmpeg
 RUN apt-get update && apt-get install -y \
-sox libsox-fmt-alsa libsox-fmt-base libsox2 ffmpeg
+sox libsox-dev ffmpeg
 
 ## Compiling Kaldi
+RUN apt install -y libatlas-base-dev
 RUN cd /kaldi/tools && make -j 8 && \
 cd /kaldi/src && ./configure && make depend && make -j 8
 
@@ -66,31 +62,17 @@ alias python=python2.7
 ## Installing IRSTLM
 RUN apt-get update && apt-get install -y cmake irstlm
 
-## Installing nano
-RUN apt-get update && apt-get install -y nano
+## Installing editors
+RUN apt-get update && apt-get install -y nano vim 
 
 ## Installing CMUseg
 RUN cd /kaldi/egs/american-archive-kaldi/sample_experiment/ && \
 sh install-cmuseg.sh && \
 chmod -R 755 ./tools/CMUseg_0.5/bin/linux/
 
-## Setting script permissions
-RUN chmod 755 -R /kaldi/egs/american-archive-kaldi/sample_experiment/scripts/
-RUN chmod 755 -R /kaldi/egs/american-archive-kaldi/sample_experiment/run.sh
-
 ## Configuration tweaks
-RUN cd /kaldi/egs/american-archive-kaldi/sample_experiment && \
-rm path.sh && \
-wget https://raw.githubusercontent.com/hipstas/kaldi-pop-up-archive/master/scripts/path.sh && \
-chmod 755 path.sh && \
-rm set-kaldi-path.sh && \
-wget https://raw.githubusercontent.com/hipstas/kaldi-pop-up-archive/master/scripts/set-kaldi-path.sh && \
-chmod 755 set-kaldi-path.sh && \
-cd /kaldi/egs/wsj/s5/utils/ && \
-rm run.pl && \
-wget https://raw.githubusercontent.com/hipstas/kaldi-pop-up-archive/master/scripts/run.pl && \
-chmod 755 run.pl && \
-mkdir /audio_in
+COPY scripts/run.pl /kaldi/egs/wsj/s5/utils/
+RUN mkdir /audio_in
 
 WORKDIR /audio_in
 
