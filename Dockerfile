@@ -1,32 +1,32 @@
 ## fork of Dockerized speech recognition with Kaldi + Pop Up Archive models
-FROM ubuntu:18.04
+FROM kaldi/kaldi-ubuntu:latest
 MAINTAINER Keigh Rim <krim@brandeis.edu>
 
 ENV PYTHONWARNINGS="ignore:a true SSLContext object"
-ENV SHELL /bin/bash
+ENV SHELL=/bin/bash
+ENV KALDI_ROOT="/usr/local/kaldi"
+ENV AAPB_PUA_RECIPE="${KALDI_ROOT}/egs/american-archive-kaldi"
 
 ## Installing core system dependencies
 RUN apt-get update && \
-apt-get install -y \
-g++ zlib1g-dev make automake autoconf libtool-bin git build-essential && \
-apt-get install -y \
-software-properties-common subversion libatlas3-base bzip2 wget curl gawk \
-zip unzip libperl4-corelibs-perl libjson-perl python2.7 python-pip && \
-pip install -U ftfy==4.4.3 && \
-ln -s -f bash /bin/sh
+    apt-get install -y \
+        software-properties-common curl gawk zip unzip libperl4-corelibs-perl \
+        libjson-perl python2.7 python-pip libsox-dev ffmpeg vim nano rsync
+# set python and python dependencies
+RUN pip install -U ftfy==4.4.3
+RUN alias python=python2.7
+RUN ln -s -f bash /bin/sh
 
 ## Installing old C/C++ compilers
-RUN apt-get update && \
-apt-get install -y gcc-4.8 g++-4.8 libgcc-4.8-dev && \
-alias gcc='gcc-4.8' && alias cc='gcc-4.8' && \
-alias g++='g++-4.8' && alias c++='c++-4.8'
+RUN apt-get install -y gcc-4.8 g++-4.8 libgcc-4.8-dev
+RUN alias gcc='gcc-4.8' && alias cc='gcc-4.8' && alias g++='g++-4.8' && alias c++='c++-4.8'
 
 ## Installing Perl dependencies
 RUN curl -L http://cpanmin.us | perl - App::cpanminus && cpanm File::Slurp::Tiny Data::Dump
 
 ## Installing sclite
-RUN apt-get update && apt-get install -y sctk && \
-alias sclite="sctk sclite"
+RUN apt-get install -y sctk
+RUN alias sclite="sctk sclite"
 
 ## Setting UTF-8 as default encoding format for terminal
 RUN apt-get install -y language-pack-en
@@ -34,51 +34,33 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
-## Downloading Kaldi and PUA resources
-RUN git clone https://github.com/kaldi-asr/kaldi.git kaldi --origin upstream
-ADD aapb-popup-kaldi-recipe /kaldi/egs/american-archive-kaldi/
-ADD exp2.tar.gz /kaldi/egs/american-archive-kaldi/sample_experiment/
+## copy PUA resources
+ADD recipe /usr/local/kaldi/egs/american-archive-kaldi/
+ADD exp2.tar.gz /usr/local/kaldi/egs/american-archive-kaldi/sample_experiment/
 
 ## Creating expected symlinks
-RUN ln -s /kaldi/egs/wsj/s5/steps /kaldi/egs/american-archive-kaldi/sample_experiment/exp && \
-ln -s /kaldi/egs/wsj/s5/utils /kaldi/egs/american-archive-kaldi/sample_experiment/exp && \
-ln -s /kaldi/egs/wsj/s5/steps /kaldi/egs/american-archive-kaldi/sample_experiment/ && \
-ln -s /kaldi/egs/wsj/s5/utils /kaldi/egs/american-archive-kaldi/sample_experiment/
-
-## Installing SoX and FFmpeg
-RUN apt-get update && apt-get install -y \
-sox libsox-dev ffmpeg
-
-## Compiling Kaldi
-RUN apt install -y libatlas-base-dev
-RUN cd /kaldi/tools && make -j 8 && \
-cd /kaldi/src && ./configure && make depend && make -j 8
-
-## Installing pip and ftfy
-RUN apt-get update && apt-get install -y python-pip && \
-pip install ftfy==4.4.3 && \
-alias python=python2.7
+RUN ln -s /usr/local/kaldi/egs/wsj/s5/steps $AAPB_PUA_RECIPE/sample_experiment/exp && \
+ln -s /usr/local/kaldi/egs/wsj/s5/utils $AAPB_PUA_RECIPE/sample_experiment/exp && \
+ln -s /usr/local/kaldi/egs/wsj/s5/steps $AAPB_PUA_RECIPE/sample_experiment/ && \
+ln -s /usr/local/kaldi/egs/wsj/s5/utils $AAPB_PUA_RECIPE/sample_experiment/
 
 ## Installing IRSTLM
-RUN apt-get update && apt-get install -y cmake irstlm
-
-## Installing editors
-RUN apt-get update && apt-get install -y nano vim 
+RUN apt-get install -y cmake irstlm
 
 ## Installing CMUseg
-RUN cd /kaldi/egs/american-archive-kaldi/sample_experiment/ && \
+RUN cd $AAPB_PUA_RECIPE/sample_experiment/ && \
 sh install-cmuseg.sh && \
 chmod -R 755 ./tools/CMUseg_0.5/bin/linux/
 
-## Configuration tweaks
-COPY scripts/run.pl /kaldi/egs/wsj/s5/utils/
+# set working directory and batch script
 RUN mkdir /audio_in
-
+ADD run-kaldi.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/run-kaldi.sh 
 WORKDIR /audio_in
+
+CMD /bin/bash /usr/local/bin/run-kaldi.sh
 
 ## Plans for next iteration
 # Pass local directory pathname as a shared volume in docker run command, then launch setup.sh as CMD or ENTRYPOINT.
 # Handle troublesome filename characters by quoting arguments in run.sh ... or just remove them.
 # Set nj prefs in a yaml file or some such.
-
-# Transcript output location: /kaldi/egs/american-archive-kaldi/sample_experiment/output

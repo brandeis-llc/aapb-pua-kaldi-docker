@@ -4,7 +4,7 @@
 # Dependencies: Kaldi, CMUseg_0.5, sox
 
 PREFIX=$(dirname $0)
-PATHSETTER=$PREFIX/set-kaldi-path.sh
+PATHSETTER=$PREFIX/path.sh
 . $PATHSETTER
 TMPDIR=/var/extra/audio/work
 
