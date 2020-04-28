@@ -1,10 +1,10 @@
 ## fork of Dockerized speech recognition with Kaldi + Pop Up Archive models
-FROM kaldi/kaldi-ubuntu:latest
+FROM kaldi/kaldi-debian:latest
 MAINTAINER Keigh Rim <krim@brandeis.edu>
 
 ENV PYTHONWARNINGS="ignore:a true SSLContext object"
 ENV SHELL=/bin/bash
-ENV KALDI_ROOT="/usr/local/kaldi"
+ENV KALDI_ROOT="/opt/kaldi"
 ENV AAPB_PUA_RECIPE="${KALDI_ROOT}/egs/american-archive-kaldi"
 
 ## Installing core system dependencies
@@ -18,8 +18,8 @@ RUN alias python=python2.7
 RUN ln -s -f bash /bin/sh
 
 ## Installing old C/C++ compilers
-RUN apt-get install -y gcc-4.8 g++-4.8 libgcc-4.8-dev
-RUN alias gcc='gcc-4.8' && alias cc='gcc-4.8' && alias g++='g++-4.8' && alias c++='c++-4.8'
+# RUN apt-get install -y gcc-4.8 g++-4.8 libgcc-4.8-dev
+# RUN alias gcc='gcc-4.8' && alias cc='gcc-4.8' && alias g++='g++-4.8' && alias c++='c++-4.8'
 
 ## Installing Perl dependencies
 RUN curl -L http://cpanmin.us | perl - App::cpanminus && cpanm File::Slurp::Tiny Data::Dump
@@ -29,20 +29,20 @@ RUN apt-get install -y sctk
 RUN alias sclite="sctk sclite"
 
 ## Setting UTF-8 as default encoding format for terminal
-RUN apt-get install -y language-pack-en
+RUN apt-get install -y locales locales-all
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 ## copy PUA resources
-ADD recipe /usr/local/kaldi/egs/american-archive-kaldi/
-ADD exp2.tar.gz /usr/local/kaldi/egs/american-archive-kaldi/sample_experiment/
+ADD recipe $KALDI_ROOT/egs/american-archive-kaldi/
+ADD exp2.tar.gz $KALDI_ROOT/egs/american-archive-kaldi/sample_experiment/
 
 ## Creating expected symlinks
-RUN ln -s /usr/local/kaldi/egs/wsj/s5/steps $AAPB_PUA_RECIPE/sample_experiment/exp && \
-ln -s /usr/local/kaldi/egs/wsj/s5/utils $AAPB_PUA_RECIPE/sample_experiment/exp && \
-ln -s /usr/local/kaldi/egs/wsj/s5/steps $AAPB_PUA_RECIPE/sample_experiment/ && \
-ln -s /usr/local/kaldi/egs/wsj/s5/utils $AAPB_PUA_RECIPE/sample_experiment/
+RUN ln -s $KALDI_ROOT/egs/wsj/s5/steps $AAPB_PUA_RECIPE/sample_experiment/exp && \
+ln -s $KALDI_ROOT/egs/wsj/s5/utils $AAPB_PUA_RECIPE/sample_experiment/exp && \
+ln -s $KALDI_ROOT/egs/wsj/s5/steps $AAPB_PUA_RECIPE/sample_experiment/ && \
+ln -s $KALDI_ROOT/egs/wsj/s5/utils $AAPB_PUA_RECIPE/sample_experiment/
 
 ## Installing IRSTLM
 RUN apt-get install -y cmake irstlm

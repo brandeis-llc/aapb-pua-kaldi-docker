@@ -1,11 +1,11 @@
 #! /bin/bash 
-KALDI_DOCKERFILE="https://raw.githubusercontent.com/kaldi-asr/kaldi/master/misc/docker/centos/Dockerfile"
+KALDI_DOCKERFILE="https://raw.githubusercontent.com/kaldi-asr/kaldi/master/docker/debian9.8-cpu/Dockerfile"
 
 # get latest commit id from official kaldi repo
 wget -O - https://api.github.com/repos/kaldi-asr/kaldi/git/refs/heads/master 2>/dev/null  \
     | grep "sha" | cut -d : -f 2 | cut -d \" -f 2 > kaldi-version
 
-KALDI_DOCKER_NAME="kaldi/kaldi-ubuntu"
+KALDI_DOCKER_NAME="kaldi/kaldi-debian"
 KALDI_DOCKER_VER=`cat kaldi-version | cut -c 1-6`
 KALDI_DOCKER_TAG=${KALDI_DOCKER_NAME}:${KALDI_DOCKER_VER}
 
@@ -22,7 +22,7 @@ elif [[ `docker images -q ${KALDI_DOCKER_TAG} 2> /dev/null` = "" ]] ; then
     echo "you must remove the existing kaldi/kaldi-ubuntu image"
     echo "by using \`docker rmi\` command."
     echo ""
-    echo "FOUND: `docker images --format "{{.Tag}}" kaldi/kaldi-ubuntu | grep -v latest`"
+    echo "FOUND: $(docker images --format "{{.Tag}}" "$KALDI_DOCKER_NAME" | grep -v latest)"
     echo "LATEST: ${KALDI_DOCKER_VER}"
     echo "========================================================"
 fi
