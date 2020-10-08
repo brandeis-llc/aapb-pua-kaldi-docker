@@ -1,14 +1,19 @@
 # Dockerized speech recognition with Kaldi + Pop Up Archive models
 
-### References
+This Kaldi models are originally provided by Pop Up Archive, and the dockerized version was published at https://github.com/hipstas/kaldi-pop-up-archive. The goal of this fork is to update underlying kaldi system and streamline iamge buliding process. 
+
+## References
 
   - Kaldi: [http://kaldi-asr.org/](http://kaldi-asr.org/)
-  - Pop Up Archive Kaldi release and install guide: [https://github.com/popuparchive/american-archive-kaldi](https://github.com/popuparchive/american-archive-kaldi)
+  - ~~Pop Up Archive Kaldi release and install guide: [https://github.com/popuparchive/american-archive-kaldi](https://github.com/popuparchive/american-archive-kaldi)~~ Pop Up Archive no longer exists
   - PUA model files: [https://sourceforge.net/projects/popuparchive-kaldi/files/](https://sourceforge.net/projects/popuparchive-kaldi/files/)
   - American Archive of Public Broadcasting (source of training set): [http://americanarchive.org/](http://americanarchive.org/)
 
-### Setup notes
+## Setup notes
 
+### Prerequisites
+ - [Docker](www.docker.com)
+ - 
 - Pull image from Docker Hub (12GB compressed, 24GB uncompressed).
 
 ```
