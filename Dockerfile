@@ -1,5 +1,5 @@
 ## fork of Dockerized speech recognition with Kaldi + Pop Up Archive models
-FROM kaldi/kaldi-debian:latest
+FROM kaldiasr/kaldi:2020-09
 MAINTAINER Keigh Rim <krim@brandeis.edu>
 
 ENV PYTHONWARNINGS="ignore:a true SSLContext object"
