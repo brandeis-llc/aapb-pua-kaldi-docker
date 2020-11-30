@@ -5,4 +5,4 @@ if [ ! -e exp2.tar.gz ] ||  ! sha1sum -c exp2.tar.gz.sha1 ; then
     wget https://sourceforge.net/projects/popuparchive-kaldi/files/exp2.tar.gz
 fi
 
-docker build . -t aapb-pua-kaldi
+docker build . -t brandeisllc/aapb-pua-kaldi:v1

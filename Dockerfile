@@ -1,6 +1,51 @@
 ## fork of Dockerized speech recognition with Kaldi + Pop Up Archive models
-FROM kaldiasr/kaldi:2020-09
+FROM debian:10
 MAINTAINER Keigh Rim <krim@brandeis.edu>
+
+#### This section is taken from official Dockerfile for kaldiasr/kaldi:2020-09 image
+### why not use the official image? because it's based on old debian and lacking native python>=3.6 support
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        g++ \
+        make \
+        automake \
+        autoconf \
+        bzip2 \
+        unzip \
+        wget \
+        sox \
+        libtool \
+        git \
+        subversion \
+        python2.7 \
+        python3 \
+        zlib1g-dev \
+        ca-certificates \
+        gfortran \
+        patch \
+        ffmpeg \
+	vim && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN ln -s /usr/bin/python2.7 /usr/bin/python
+
+RUN git clone https://github.com/kaldi-asr/kaldi.git /opt/kaldi && \
+### and we want to use the same commit that original dockerfile was pushed
+    cd /opt/kaldi && git checkout 1928b9cd0cdb93e3be3a7d0db7cd127e5198732c
+### following lines are slightly different from the original, mended for utilizing docker caching
+WORKDIR /opt/kaldi/tools
+RUN ./extras/install_mkl.sh
+RUN make -j $(nproc)
+WORKDIR /opt/kaldi/src
+RUN ./configure --shared
+RUN make depend -j $(nproc)
+RUN make -j $(nproc) && \
+    find /opt/kaldi -type f \( -name "*.o" -o -name "*.la" -o -name "*.a" \) -exec rm {} \; && \
+    find /opt/intel -type f -name "*.a" -exec rm {} \; && \
+    find /opt/intel -type f -regex '.*\(_mc.?\|_mic\|_thread\|_ilp64\)\.so' -exec rm {} \; && \
+    rm -rf /opt/kaldi/.git
+
+#### end kaldi 
 
 ENV PYTHONWARNINGS="ignore:a true SSLContext object"
 ENV SHELL=/bin/bash
@@ -35,8 +80,8 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 ## copy PUA resources
-ADD recipe $KALDI_ROOT/egs/american-archive-kaldi/
 ADD exp2.tar.gz $KALDI_ROOT/egs/american-archive-kaldi/sample_experiment/
+ADD recipe $KALDI_ROOT/egs/american-archive-kaldi/
 
 ## Creating expected symlinks
 RUN ln -s $KALDI_ROOT/egs/wsj/s5/steps $AAPB_PUA_RECIPE/sample_experiment/exp && \
