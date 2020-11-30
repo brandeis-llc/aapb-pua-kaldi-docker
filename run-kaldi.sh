@@ -5,7 +5,7 @@ cd /audio_in/
 ## Now add media files to /audio_in/
 
 for file in /audio_in/*.{wav,mp3,mp4,WAV,MP3,MP4}; do
-base=$(basename """$file""" .mp3);
+base=$(basename "${file%.*}")
 ffmpeg -i """$file""" -ac 1 -ar 16000 """$base"""_16kHz.wav;
 done
 
