@@ -14,7 +14,7 @@ mv *_16kHz.wav /audio_in_16khz/
 
 ######### Starting the batch transcription run ##########
 
-python $KALDI_ROOT/egs/american-archive-kaldi/run_kaldi.py $KALDI_ROOT/egs/american-archive-kaldi/sample_experiment/ /audio_in_16khz/ && \
+python $KALDI_ROOT/egs/american-archive-kaldi/run_kaldi.py $KALDI_ROOT/egs/american-archive-kaldi/sample_experiment/ /audio_in_16khz/ /audio_in && \
 rsync -a $KALDI_ROOT/egs/american-archive-kaldi/sample_experiment/output/ /audio_in/transcripts/
 
 rm -r /audio_in_16khz/
