@@ -6,7 +6,7 @@
 PREFIX=$(dirname $0)
 PATHSETTER=$PREFIX/path.sh
 . $PATHSETTER
-TMPDIR=/var/extra/audio/work
+TMPDIR=$(mktemp -d)
 
 nj=1
 decode_nj=1
@@ -50,7 +50,7 @@ $PREFIX/scripts/wav2pem $WORK/$wavName.wav $WORK/tmp-rec/$wavName.pem $PREFIX/to
 
 if [ ! -f "$WORK/tmp-rec/$wavName.pem" ]; then
     echo "Failed to create $WORK/tmp-rec/$wavName.pem"
-    exit
+    exit 1
 fi
 
 cat $WORK/tmp-rec/$wavName.pem | egrep -v '^;;' | while read dummy chan spkr init quit cond ; do
