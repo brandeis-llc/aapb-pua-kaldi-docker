@@ -80,7 +80,8 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 ## copy PUA resources
-ADD exp2.tar.gz $KALDI_ROOT/egs/american-archive-kaldi/sample_experiment/
+WORKDIR /opt/kaldi/egs/american-archive-kaldi/sample_experiment
+RUN wget -qO- https://sourceforge.net/projects/popuparchive-kaldi/files/exp2.tar.gz | tar -zxv
 ADD recipe $KALDI_ROOT/egs/american-archive-kaldi/
 
 ## Creating expected symlinks
