@@ -1,5 +1,5 @@
 ## fork of Dockerized speech recognition with Kaldi + Pop Up Archive models
-FROM debian:10
+FROM debian:11
 MAINTAINER Keigh Rim <krim@brandeis.edu>
 
 #### This section is taken from official Dockerfile for kaldiasr/kaldi:2020-09 image
@@ -56,7 +56,10 @@ ENV AAPB_PUA_RECIPE="${KALDI_ROOT}/egs/american-archive-kaldi"
 RUN apt-get update && \
     apt-get install -y \
         software-properties-common curl gawk zip unzip libperl4-corelibs-perl \
-        libjson-perl python2.7 python-pip libsox-dev ffmpeg vim nano rsync
+        libjson-perl python2.7 libsox-dev ffmpeg vim nano rsync
+RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py > get-pip.py
+RUN python2.7 get-pip.py
+RUN rm get-pip.py
 # set python and python dependencies
 RUN pip install -U ftfy==4.4.3
 RUN alias python=python2.7
